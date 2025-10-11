@@ -32,6 +32,21 @@
 
 ---
 
+## 🗓️ Roadmap
+
+- [x] Basic map display with Leaflet
+- [x] GPS location detection with IP fallback
+- [x] Travel statistics counter
+- [x] OpenCage reverse geocoding integration ✨ NEW
+- [x] Firebase authentication (Email/Password) ✨ NEW
+- [x] Save visited places to database ✨ NEW
+- [x] Duplicate location detection ✨ NEW
+- [x] Delete visit functionality ✨ NEW
+- [ ] Map screenshot/sharing feature
+- [ ] Country heatmap visualization
+- [ ] Travel timeline view
+- [ ] Friends & social features
+
 ## 🛠️ Installation
 ```bash
 # Clone the repository
