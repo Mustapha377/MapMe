@@ -6,6 +6,8 @@ import { reverseGeocode, getLocationFromIP } from './components/services/geocodi
 import { onAuthChange, logOut, saveVisit, getUserVisits, deleteVisit } from './components/services/firebaseService';
 import AuthModal from './components/AuthModal';
 import ShareButton from './components/ShareButton';
+import { createCustomMarker, getCountryColor, getCountryStats } from './utils/markerUtils';
+import StatsPanel from './components/StatsPanel';
 
 // Fix for default marker icons in React-Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -351,7 +353,11 @@ function App() {
           {userLocation && <MapController center={[userLocation.lat, userLocation.lng]} />}
           
           {visits.map((visit) => (
-            <Marker key={visit.id} position={[visit.lat, visit.lng]}>
+              <Marker 
+                key={visit.id} 
+                position={[visit.lat, visit.lng]}
+                icon={createCustomMarker(getCountryColor(visit.country))}
+              >
               <Popup>
                 <div className="text-center p-2">
                   <h3 className="font-bold text-lg mb-1">{visit.city}</h3>
@@ -382,7 +388,14 @@ function App() {
         </MapContainer>
       </div>
 
-      {/* Instructions Overlay */}
+          {/* Stats Panel (shown for logged-in users) */}
+      {user && visits.length > 0 && (
+        <div className="absolute bottom-4 left-4 w-96 z-10">
+          <StatsPanel visits={visits} />
+        </div>
+      )}
+
+      {/* Instructions Overlay (shown for non-logged-in users) */}
       {!user && (
         <div className="absolute bottom-4 left-4 bg-white p-4 rounded-lg shadow-lg max-w-sm z-10 border-2 border-blue-200">
           <h3 className="font-bold text-lg mb-2 text-blue-600">🚀 Getting Started</h3>
