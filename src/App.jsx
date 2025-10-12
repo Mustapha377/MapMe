@@ -5,6 +5,7 @@ import L from 'leaflet';
 import { reverseGeocode, getLocationFromIP } from './components/services/geocodingService';
 import { onAuthChange, logOut, saveVisit, getUserVisits, deleteVisit } from './components/services/firebaseService';
 import AuthModal from './components/AuthModal';
+import ShareButton from './components/ShareButton';
 
 // Fix for default marker icons in React-Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -273,6 +274,9 @@ function App() {
                     </>
                   )}
                 </button>
+                 
+                <ShareButton visits={visits} userName={user?.email || 'Anonymous'} />
+
                 <button 
                   onClick={handleLogout}
                   className="bg-white text-red-600 px-4 py-2 rounded-lg font-semibold hover:bg-red-50 transition"
