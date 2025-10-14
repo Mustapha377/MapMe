@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import html2canvas from 'html2canvas';
 
-function ShareButton({ visits, userName }) {
+function ShareButton({ visits, userName, onNotification }) {
   const [isSharing, setIsSharing] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [capturedImage, setCapturedImage] = useState(null);
@@ -15,7 +15,7 @@ function ShareButton({ visits, userName }) {
       const mapElement = document.querySelector('.leaflet-container');
       
       if (!mapElement) {
-        alert('Map not found!');
+        onNotification('Unable to capture map. Please try again.', 'error');
         setIsSharing(false);
         return;
       }
@@ -25,14 +25,13 @@ function ShareButton({ visits, userName }) {
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
-        scale: 2, // Higher quality
+        scale: 2,
       });
 
       // Create a new canvas with overlay text
       const finalCanvas = document.createElement('canvas');
       const ctx = finalCanvas.getContext('2d');
       
-      // Set canvas size (add space for text overlay)
       finalCanvas.width = canvas.width;
       finalCanvas.height = canvas.height + 200;
 
@@ -75,7 +74,7 @@ function ShareButton({ visits, userName }) {
       
     } catch (error) {
       console.error('Screenshot error:', error);
-      alert('Failed to capture map. Please try again.');
+      onNotification('Failed to capture map. Please try again.', 'error');
       setIsSharing(false);
     }
   };
@@ -85,6 +84,7 @@ function ShareButton({ visits, userName }) {
     link.download = `my-travel-map-${Date.now()}.png`;
     link.href = capturedImage;
     link.click();
+    onNotification('Map image downloaded successfully!', 'success');
   };
 
   const shareToSocial = (platform) => {
@@ -110,19 +110,17 @@ function ShareButton({ visits, userName }) {
 
   const copyToClipboard = async () => {
     try {
-      // Convert data URL to blob
       const response = await fetch(capturedImage);
       const blob = await response.blob();
       
-      // Copy to clipboard
       await navigator.clipboard.write([
         new ClipboardItem({ 'image/png': blob })
       ]);
       
-      alert('Image copied to clipboard! 📋');
+      onNotification('Image copied to clipboard successfully!', 'success');
     } catch (error) {
       console.error('Copy error:', error);
-      alert('Failed to copy. Try downloading instead.');
+      onNotification('Copy failed. Please use the download option.', 'error');
     }
   };
 
@@ -131,6 +129,7 @@ function ShareButton({ visits, userName }) {
       <button
         onClick={captureMap}
         disabled={isSharing || visits.length === 0}
+        title={visits.length === 0 ? 'Add locations to your map first' : 'Capture and share your travel map'}
         className="bg-white text-purple-600 px-4 py-2 rounded-lg font-semibold hover:bg-purple-50 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
       >
         {isSharing ? (
