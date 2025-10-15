@@ -1,6 +1,8 @@
 //Header.jsx
 import React from 'react';
 import ShareButton from './ShareButton';
+import { MapPinned, MapPin, Globe, LogIn, LogOut, } from 'lucide-react';
+
 
 function Header({ user, onLogout, onShowAuth, onAddLocation, loading, visits }) {
   return (
@@ -36,7 +38,7 @@ function Header({ user, onLogout, onShowAuth, onAddLocation, loading, visits }) 
                     </>
                   ) : (
                     <>
-                      <span>📍</span>
+                      <MapPin/>
                       <span>Add Location</span>
                     </>
                   )}
@@ -48,7 +50,7 @@ function Header({ user, onLogout, onShowAuth, onAddLocation, loading, visits }) 
                   onClick={onLogout}
                   className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-5 py-2.5 rounded-lg font-semibold transition flex items-center gap-2 backdrop-blur-sm"
                 >
-                  <span>🚪</span>
+                  <LogOut/>
                   <span>Logout</span>
                 </button>
               </>
@@ -57,7 +59,7 @@ function Header({ user, onLogout, onShowAuth, onAddLocation, loading, visits }) 
                 onClick={onShowAuth}
                 className="bg-white text-blue-600 px-6 py-2.5 rounded-lg font-semibold hover:bg-blue-50 transition shadow-md flex items-center gap-2"
               >
-                <span>🔐</span>
+                <LogIn/>
                 <span>Login / Sign Up</span>
               </button>
             )}

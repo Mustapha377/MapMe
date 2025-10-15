@@ -1,5 +1,8 @@
 //StatsBar.jsx
 import React from 'react';
+import { MapPinned, Globe, Building2,  } from 'lucide-react';
+
+
 
 function StatsBar({ visits, loading }) {
   const uniqueCountries = new Set(visits.map(v => v.country)).size;
@@ -7,19 +10,19 @@ function StatsBar({ visits, loading }) {
 
   const stats = [
     {
-      icon: '📍',
+      icon: <MapPinned/>,
       label: 'Places Visited',
       value: visits.length,
       color: 'blue'
     },
     {
-      icon: '🌍',
+      icon: <Globe/>,
       label: 'Countries',
       value: uniqueCountries,
       color: 'green'
     },
     {
-      icon: '🏙️',
+      icon: <Building2/>,
       label: 'Cities',
       value: uniqueCities,
       color: 'purple'

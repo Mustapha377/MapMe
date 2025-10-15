@@ -1,6 +1,8 @@
 //ShareButton.jsx
 import React, { useState } from 'react';
 import html2canvas from 'html2canvas';
+import { MapPinned, MapPin, Globe, Building2, LogOut, Share2, ImageDown, Copy } from 'lucide-react';
+import { FaFacebook, FaXTwitter, FaWhatsapp} from "react-icons/fa6"
 
 function ShareButton({ visits, userName, onNotification }) {
   const [isSharing, setIsSharing] = useState(false);
@@ -139,7 +141,7 @@ function ShareButton({ visits, userName, onNotification }) {
           </>
         ) : (
           <>
-            📸 Share Map
+            <Share2/> Share Map
           </>
         )}
       </button>
@@ -176,13 +178,13 @@ function ShareButton({ visits, userName, onNotification }) {
                   onClick={downloadImage}
                   className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center justify-center gap-2"
                 >
-                  ⬇️ Download Image
+                 <ImageDown/> Download Image
                 </button>
                 <button
                   onClick={copyToClipboard}
                   className="flex-1 bg-gray-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-gray-700 transition flex items-center justify-center gap-2"
                 >
-                  📋 Copy to Clipboard
+                  <Copy/> Copy to Clipboard
                 </button>
               </div>
 
@@ -194,19 +196,19 @@ function ShareButton({ visits, userName, onNotification }) {
                     onClick={() => shareToSocial('twitter')}
                     className="flex-1 bg-blue-400 text-white py-2 px-4 rounded-lg font-semibold hover:bg-blue-500 transition"
                   >
-                    🐦 Twitter
+                    <FaXTwitter/> Twitter
                   </button>
                   <button
                     onClick={() => shareToSocial('facebook')}
                     className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg font-semibold hover:bg-blue-700 transition"
                   >
-                    📘 Facebook
+                    <FaFacebook/> Facebook
                   </button>
                   <button
                     onClick={() => shareToSocial('whatsapp')}
                     className="flex-1 bg-green-500 text-white py-2 px-4 rounded-lg font-semibold hover:bg-green-600 transition"
                   >
-                    💬 WhatsApp
+                    <FaWhatsapp/> WhatsApp
                   </button>
                 </div>
               </div>
