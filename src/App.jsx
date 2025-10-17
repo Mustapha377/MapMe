@@ -12,6 +12,10 @@ import StatsPanel from './components/StatsPanel';
 import LoadingOverlay from './components/LoadingOverlay';
 import WelcomeCard from './components/WelcomeCard';
 import Notification from './components/Notification';
+import ImportModal from './components/ImportModal';
+import trackingService from './components/services/locationTrackingService';
+import TrackingSettings from './components/TrackingSettings';
+import TrackingPermissionModal from './components/TrackingPermissionModal';
 
 // Fix for default marker icons
 delete L.Icon.Default.prototype._getIconUrl;
@@ -51,6 +55,14 @@ function App() {
   const [loadingVisits, setLoadingVisits] = useState(false);
   const [notification, setNotification] = useState(null);
   const [pendingDelete, setPendingDelete] = useState(null);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [isTracking, setIsTracking] = useState(false);
+  const [trackingStats, setTrackingStats] = useState({
+  autoDetected: 0,
+  lastDetected: null
+});
+  const [showTrackingPermission, setShowTrackingPermission] = useState(false);
+
 
   // Default map center
   const defaultCenter = [9.0820, 8.6753];
@@ -242,6 +254,142 @@ function App() {
     setNotification(null);
   };
 
+  // Import location history
+const handleImportPlaces = async (places) => {
+  showNotification(`Importing ${places.length} locations...`, 'info');
+  
+  let successCount = 0;
+  let errorCount = 0;
+
+  for (const place of places) {
+    const visitData = {
+      ...place,
+      timestamp: place.timestamp || new Date().toISOString()
+    };
+
+    const { id, error } = await saveVisit(user.uid, visitData);
+
+    if (!error && id) {
+      const newVisit = { id, ...visitData, userId: user.uid, createdAt: visitData.timestamp };
+      setVisits(prevVisits => [newVisit, ...prevVisits]);
+      successCount++;
+    } else {
+      errorCount++;
+    }
+
+    // Small delay to avoid overwhelming Firebase
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+
+  if (successCount > 0) {
+    showNotification(`Successfully imported ${successCount} location${successCount > 1 ? 's' : ''}!`, 'success');
+  }
+  
+  if (errorCount > 0) {
+    showNotification(`Failed to import ${errorCount} location${errorCount > 1 ? 's' : ''}`, 'warning');
+  }
+};
+
+
+// Handle location update from tracking service
+const handleTrackingUpdate = async (coords) => {
+  if (coords.error) {
+    console.error('Tracking error:', coords.error);
+    return;
+  }
+
+  if (!user) return;
+
+  try {
+    // Check if already exists (duplicate prevention)
+    if (isDuplicateLocation(coords.lat, coords.lng, visits)) {
+      console.log('Location already tracked, skipping');
+      return;
+    }
+
+    showNotification('New location detected, adding to map...', 'info');
+
+    // Reverse geocode
+    const locationDetails = await reverseGeocode(coords.lat, coords.lng);
+
+    const visitData = {
+      lat: coords.lat,
+      lng: coords.lng,
+      ...locationDetails,
+      method: 'Auto-Tracked',
+      timestamp: coords.timestamp
+    };
+
+    // Save to Firebase
+    const { id, error: saveError } = await saveVisit(user.uid, visitData);
+
+    if (!saveError && id) {
+      const newVisit = { id, ...visitData, userId: user.uid, createdAt: visitData.timestamp };
+      setVisits(prevVisits => [newVisit, ...prevVisits]);
+      
+      // Update stats
+      setTrackingStats(prev => ({
+        autoDetected: prev.autoDetected + 1,
+        lastDetected: `${locationDetails.city}, ${locationDetails.country}`
+      }));
+
+      showNotification(`Auto-detected: ${locationDetails.city}, ${locationDetails.country}`, 'success');
+    }
+  } catch (error) {
+    console.error('Tracking save error:', error);
+  }
+};
+
+// Toggle tracking
+const toggleTracking = () => {
+  if (!user) {
+    setShowAuthModal(true);
+    showNotification('Please sign in to use auto-tracking', 'warning');
+    return;
+  }
+
+  if (isTracking) {
+    // Stop tracking
+    trackingService.stopTracking();
+    setIsTracking(false);
+    showNotification('Auto-tracking disabled', 'info');
+  } else {
+    // Show permission modal first
+    setShowTrackingPermission(true);
+  }
+};
+
+// Handle tracking permission
+const handleAllowTracking = () => {
+  setShowTrackingPermission(false);
+  trackingService.startTracking(handleTrackingUpdate);
+  setIsTracking(true);
+  showNotification('Auto-tracking enabled! We\'ll save places as you travel.', 'success');
+};
+
+const handleDenyTracking = () => {
+  setShowTrackingPermission(false);
+  showNotification('Auto-tracking not enabled', 'info');
+};
+
+// Cleanup tracking on unmount or logout
+useEffect(() => {
+  return () => {
+    if (isTracking) {
+      trackingService.stopTracking();
+    }
+  };
+}, [isTracking]);
+
+// Stop tracking when user logs out
+useEffect(() => {
+  if (!user && isTracking) {
+    trackingService.stopTracking();
+    setIsTracking(false);
+    setTrackingStats({ autoDetected: 0, lastDetected: null });
+  }
+}, [user, isTracking]);
+
   return (
     <div className="h-screen w-screen flex flex-col overflow-hidden">
       {/* Header */}
@@ -250,8 +398,10 @@ function App() {
         onLogout={handleLogout}
         onShowAuth={() => setShowAuthModal(true)}
         onAddLocation={getUserLocation}
+        onImport={() => setShowImportModal(true)}
         loading={loading}
         visits={visits}
+        onNotification={showNotification}
       />
 
       {/* Notification */}
@@ -320,6 +470,15 @@ function App() {
           ))}
         </MapContainer>
 
+        {/* Tracking Settings - Add this */}
+        {user && (
+          <TrackingSettings
+            isTracking={isTracking}
+            onToggleTracking={toggleTracking}
+            trackingStats={trackingStats}
+          />
+        )}
+
         {/* Stats Panel (for logged-in users with visits) */}
         {user && visits.length > 0 && (
           <div className="absolute bottom-6 left-6 w-96 z-10">
@@ -345,6 +504,24 @@ function App() {
           onAuthSuccess={(user) => {
             showNotification(`Welcome, ${user.email}!`, 'success');
           }}
+        />
+      )}
+
+      {/* Import Modal */}
+      {showImportModal && user && (
+        <ImportModal
+          onClose={() => setShowImportModal(false)}
+          onImport={handleImportPlaces}
+          onNotification={showNotification}
+          userId={user.uid}
+        />
+      )}
+
+      {/* Tracking Permission Modal */}
+      {showTrackingPermission && (
+        <TrackingPermissionModal
+          onAllow={handleAllowTracking}
+          onDeny={handleDenyTracking}
         />
       )}
     </div>

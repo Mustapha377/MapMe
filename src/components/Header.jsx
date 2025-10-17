@@ -4,7 +4,7 @@ import ShareButton from './ShareButton';
 import { MapPinned, MapPin, Globe, LogIn, LogOut, } from 'lucide-react';
 
 
-function Header({ user, onLogout, onShowAuth, onAddLocation, loading, visits }) {
+function Header({ user, onLogout, onShowAuth, onAddLocation, onImport, loading, visits, onNotification}) {
   return (
     <header className="bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg">
       <div className="max-w-7xl mx-auto px-4 py-4">
@@ -42,6 +42,15 @@ function Header({ user, onLogout, onShowAuth, onAddLocation, loading, visits }) 
                       <span>Add Location</span>
                     </>
                   )}
+                </button>
+
+                 <button
+                  onClick={onImport}
+                  className="bg-white text-green-600 px-5 py-2.5 rounded-lg font-semibold hover:bg-green-50 transition flex items-center gap-2 shadow-md"
+                  title="Import location history"
+                >
+                  <span>📤</span>
+                  <span>Import</span>
                 </button>
                 
                 <ShareButton visits={visits} userName={user?.email || 'Anonymous'} />
