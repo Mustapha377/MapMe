@@ -1,5 +1,5 @@
-//TrackingSettings.jsx
-import React, { useState, useEffect } from 'react';
+// src/components/TrackingSettings.jsx
+import React, { useState } from 'react';
 
 function TrackingSettings({ isTracking, onToggleTracking, trackingStats }) {
   const [showSettings, setShowSettings] = useState(false);
@@ -50,6 +50,16 @@ function TrackingSettings({ isTracking, onToggleTracking, trackingStats }) {
           </div>
         )}
 
+        {/* Persistent Tracking Indicator */}
+        {isTracking && (
+          <div className="mt-3 bg-blue-50 border border-blue-200 rounded p-2">
+            <div className="flex items-center gap-2 text-xs text-blue-700">
+              <span>🔄</span>
+              <span className="font-semibold">Tracking will continue in background</span>
+            </div>
+          </div>
+        )}
+
         {/* Settings Button */}
         <button
           onClick={() => setShowSettings(!showSettings)}
@@ -69,9 +79,19 @@ function TrackingSettings({ isTracking, onToggleTracking, trackingStats }) {
                 <li>• Monitors your location in the background</li>
                 <li>• Saves places when you move 1km+ away</li>
                 <li>• Uses minimal battery power</li>
-                <li>• Only works when app is open</li>
+                <li>• Continues tracking even after refresh</li>
+                <li>• Sends browser notifications for new places</li>
                 <li>• You can stop anytime</li>
               </ul>
+            </div>
+
+            <div className="bg-green-50 border border-green-200 rounded p-3">
+              <h4 className="text-xs font-semibold text-green-800 mb-2">
+                🔔 Browser Notifications:
+              </h4>
+              <p className="text-xs text-green-700">
+                You'll receive notifications when new locations are detected, even when the app is in the background.
+              </p>
             </div>
 
             <div className="bg-yellow-50 border border-yellow-200 rounded p-3">
@@ -79,9 +99,28 @@ function TrackingSettings({ isTracking, onToggleTracking, trackingStats }) {
                 ⚠️ Privacy Note:
               </h4>
               <p className="text-xs text-yellow-700">
-                Your location is only saved to your account. We don't share it with anyone.
+                Your location is only saved to your account. We don't share it with anyone. All data stays private.
               </p>
             </div>
+
+            {/* Notification Permission Status */}
+            {'Notification' in window && (
+              <div className="bg-gray-50 border border-gray-200 rounded p-3">
+                <h4 className="text-xs font-semibold text-gray-800 mb-1">
+                  Notification Status:
+                </h4>
+                <p className="text-xs text-gray-700">
+                  {Notification.permission === 'granted' && '✅ Enabled'}
+                  {Notification.permission === 'denied' && '❌ Blocked'}
+                  {Notification.permission === 'default' && '⏳ Not yet requested'}
+                </p>
+                {Notification.permission === 'denied' && (
+                  <p className="text-xs text-red-600 mt-1">
+                    Enable notifications in your browser settings to receive alerts.
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>

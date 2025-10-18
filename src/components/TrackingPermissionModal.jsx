@@ -1,4 +1,4 @@
-//TrackingPermissionModal.jsx
+// src/components/TrackingPermissionModal.jsx
 import React from 'react';
 
 function TrackingPermissionModal({ onAllow, onDeny }) {
@@ -29,6 +29,13 @@ function TrackingPermissionModal({ onAllow, onDeny }) {
               </div>
             </div>
             <div className="flex gap-3 items-start">
+              <div className="text-2xl">🔔</div>
+              <div>
+                <h4 className="font-semibold text-gray-800 text-sm">Browser Notifications</h4>
+                <p className="text-xs text-gray-600">Get notified when new places are detected</p>
+              </div>
+            </div>
+            <div className="flex gap-3 items-start">
               <div className="text-2xl">🔒</div>
               <div>
                 <h4 className="font-semibold text-gray-800 text-sm">Private & Secure</h4>
@@ -43,12 +50,32 @@ function TrackingPermissionModal({ onAllow, onDeny }) {
               </div>
             </div>
             <div className="flex gap-3 items-start">
+              <div className="text-2xl">🔄</div>
+              <div>
+               <h4 className="font-semibold text-gray-800 text-sm">Persistent Tracking</h4>
+                <p className="text-xs text-gray-600">Continues tracking even after page refresh</p>
+              </div>
+            </div>
+            <div className="flex gap-3 items-start">
               <div className="text-2xl">⏹️</div>
               <div>
                 <h4 className="font-semibold text-gray-800 text-sm">Full Control</h4>
                 <p className="text-xs text-gray-600">Stop tracking anytime you want</p>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Important Note */}
+        <div className="px-6 pb-6">
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+            <h4 className="text-xs font-semibold text-yellow-800 mb-1 flex items-center gap-1">
+              <span>⚠️</span>
+              <span>Browser Permissions Required</span>
+            </h4>
+            <p className="text-xs text-yellow-700">
+              You'll be asked to allow location access and browser notifications. Both are needed for auto-tracking to work properly.
+            </p>
           </div>
         </div>
 

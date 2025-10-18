@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -56,7 +56,15 @@ function App() {
   const [notification, setNotification] = useState(null);
   const [pendingDelete, setPendingDelete] = useState(null);
   const [showImportModal, setShowImportModal] = useState(false);
-  const [isTracking, setIsTracking] = useState(false);
+  const [isTracking, setIsTracking] = useState(() => {
+  // Initialize from localStorage
+  try {
+    const saved = localStorage.getItem('mapme_tracking_enabled');
+    return saved ? JSON.parse(saved) : false;
+  } catch {
+    return false;
+  }
+});
   const [trackingStats, setTrackingStats] = useState({
   autoDetected: 0,
   lastDetected: null
@@ -292,7 +300,7 @@ const handleImportPlaces = async (places) => {
 
 
 // Handle location update from tracking service
-const handleTrackingUpdate = async (coords) => {
+const handleTrackingUpdate = useCallback(async (coords) => {
   if (coords.error) {
     console.error('Tracking error:', coords.error);
     return;
@@ -334,11 +342,17 @@ const handleTrackingUpdate = async (coords) => {
       }));
 
       showNotification(`Auto-detected: ${locationDetails.city}, ${locationDetails.country}`, 'success');
+      
+      // Show browser notification
+      trackingService.showNotification(
+        '📍 New Location Detected',
+        `Added ${locationDetails.city}, ${locationDetails.country} to your map`
+      );
     }
   } catch (error) {
     console.error('Tracking save error:', error);
   }
-};
+}, [user, visits]); // Dependencies: user and visits
 
 // Toggle tracking
 const toggleTracking = () => {
@@ -360,8 +374,14 @@ const toggleTracking = () => {
 };
 
 // Handle tracking permission
-const handleAllowTracking = () => {
+const handleAllowTracking = async () => {
   setShowTrackingPermission(false);
+  
+  // Request browser notification permission
+  if ('Notification' in window && Notification.permission === 'default') {
+    await Notification.requestPermission();
+  }
+  
   trackingService.startTracking(handleTrackingUpdate);
   setIsTracking(true);
   showNotification('Auto-tracking enabled! We\'ll save places as you travel.', 'success');
@@ -371,6 +391,26 @@ const handleDenyTracking = () => {
   setShowTrackingPermission(false);
   showNotification('Auto-tracking not enabled', 'info');
 };
+
+
+// Resume tracking on page load if it was enabled
+useEffect(() => {
+  if (user && isTracking) {
+    console.log('Resuming tracking on page load');
+    trackingService.resumeTracking(handleTrackingUpdate);
+  }
+}, [user, isTracking]); // Run when user OR isTracking changes
+
+// Resume tracking on initial page load
+useEffect(() => {
+  // Check if tracking was enabled before page refresh
+  const wasTrackingEnabled = localStorage.getItem('mapme_tracking_enabled');
+  
+  if (wasTrackingEnabled === 'true' && user) {
+    console.log('Auto-resuming tracking after page refresh');
+    trackingService.resumeTracking(handleTrackingUpdate);
+  }
+}, [user]); // Run when user loads/changes
 
 // Cleanup tracking on unmount or logout
 useEffect(() => {
